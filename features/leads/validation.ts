@@ -4,9 +4,9 @@ import { LEAD_STATUSES } from "@/db/schema";
 export const publicLeadSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional().or(z.literal("")),
-  company: z.string().optional().or(z.literal("")),
-  source: z.string().optional().default("public_form"),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  source: z.string().default("public_form"),
   website_url_hp: z.string().optional(), // Honeypot field (must be empty)
 });
 

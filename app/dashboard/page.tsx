@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,80 +21,84 @@ import {
   FolderSearchIcon,
 } from "@hugeicons/core-free-icons";
 
+// ─── fetcher ──────────────────────────────────────────────────────────────────
+async function fetchLeads({
+  page,
+  statusFilter,
+  assigneeFilter,
+  search,
+}: {
+  page: number;
+  statusFilter: string;
+  assigneeFilter: string;
+  search: string;
+}) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", "10");
+  if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
+  if (assigneeFilter && assigneeFilter !== "all") params.set("assignedTo", assigneeFilter);
+  if (search.trim()) params.set("q", search.trim());
+
+  const res = await fetch(`/api/leads?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Failed to fetch leads");
+  return data;
+}
+
+async function fetchUsers() {
+  const res = await fetch("/api/users");
+  const data = await res.json();
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return data.data as { id: string; name: string; role: string }[];
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [leads, setLeads] = useState<any[]>([]);
-  const [meta, setMeta] = useState<any>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 1,
-    hasNext: false,
-    hasPrevious: false,
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [assigneeFilter, setAssigneeFilter] = useState("all");
+
+  // Each unique filter/page combo is cached separately as its own query key entry
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["leads", { page, statusFilter, assigneeFilter, search }],
+    queryFn: () => fetchLeads({ page, statusFilter, assigneeFilter, search }),
+    placeholderData: (prev) => prev, // keep stale data visible while refetching (like keepPreviousData)
   });
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: usersList = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 5 * 60 * 1000, // users list rarely changes — 5 min stale
+  });
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
-  const [page, setPage] = useState(1);
-
-  // Users for assignee filter dropdown
-  const [usersList, setUsersList] = useState<any[]>([]);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch("/api/users");
-      const data = await res.json();
-      if (res.ok) {
-        setUsersList(data.data || []);
-      }
-    } catch {
-      // Ignore user list fetch failure
-    }
+  const leads: any[] = data?.data ?? [];
+  const meta = data?.meta ?? {
+    page: 1,
+    totalPages: 1,
+    total: 0,
+    hasNext: false,
+    hasPrevious: false,
   };
 
-  const fetchLeads = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setAssigneeFilter("all");
+    setPage(1);
+  };
 
-    try {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("limit", "10");
-      if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
-      if (assigneeFilter && assigneeFilter !== "all") params.set("assignedTo", assigneeFilter);
-      if (search.trim()) params.set("q", search.trim());
-
-      const res = await fetch(`/api/leads?${params.toString()}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to fetch leads");
-      }
-
-      setLeads(data.data || []);
-      if (data.meta) setMeta(data.meta);
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, statusFilter, assigneeFilter, search]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+  const hasActiveFilters = search || statusFilter !== "all" || assigneeFilter !== "all";
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Top Title & Metrics */}
+      {/* Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
@@ -103,39 +108,30 @@ export default function DashboardPage() {
             Track, assign, and convert sales opportunities across your team
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Total Leads: <span className="font-bold text-zinc-900 dark:text-zinc-100">{meta.total}</span>
-          </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          Total Leads:{" "}
+          <span className="font-bold text-zinc-900 dark:text-zinc-100">{meta.total}</span>
         </div>
       </div>
 
       {/* Filter Toolbar */}
       <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <CardContent className="p-4 flex flex-col md:flex-row items-center gap-3">
-          {/* Search Input */}
           <div className="relative w-full md:w-72">
             <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 text-zinc-400 size-4" />
             <Input
               placeholder="Search name, email, company..."
               className="pl-9 h-9 text-xs"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
 
-          {/* Status Filter */}
           <div className="w-full md:w-44 flex items-center gap-1.5">
             <HugeiconsIcon icon={FilterIcon} className="text-zinc-400 shrink-0 size-3.5" />
             <Select
               value={statusFilter}
-              onValueChange={(val) => {
-                if (val) setStatusFilter(val);
-                setPage(1);
-              }}
+              onValueChange={(val) => { if (val) { setStatusFilter(val); setPage(1); } }}
             >
               <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="All Statuses" />
@@ -143,23 +139,17 @@ export default function DashboardPage() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {LEAD_STATUSES.map((st) => (
-                  <SelectItem key={st} value={st} className="capitalize">
-                    {st}
-                  </SelectItem>
+                  <SelectItem key={st} value={st} className="capitalize">{st}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Assignee Filter */}
           <div className="w-full md:w-48 flex items-center gap-1.5">
             <HugeiconsIcon icon={UserIcon} className="text-zinc-400 shrink-0 size-3.5" />
             <Select
               value={assigneeFilter}
-              onValueChange={(val) => {
-                if (val) setAssigneeFilter(val);
-                setPage(1);
-              }}
+              onValueChange={(val) => { if (val) { setAssigneeFilter(val); setPage(1); } }}
             >
               <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="All Assignees" />
@@ -169,26 +159,18 @@ export default function DashboardPage() {
                 <SelectItem value="me">Assigned to Me</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 {usersList.map((u) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.name}
-                  </SelectItem>
+                  <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Reset Filters button if filters applied */}
-          {(search || statusFilter !== "all" || assigneeFilter !== "all") && (
+          {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
               className="text-xs h-9 text-zinc-500 hover:text-zinc-900 ml-auto"
-              onClick={() => {
-                setSearch("");
-                setStatusFilter("all");
-                setAssigneeFilter("all");
-                setPage(1);
-              }}
+              onClick={resetFilters}
             >
               Reset Filters
             </Button>
@@ -196,30 +178,24 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Leads Table Card */}
+      {/* Table Card */}
       <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
-        {loading ? (
+        {isLoading ? (
           <div className="p-6 space-y-4">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="p-8 text-center text-rose-600 font-medium text-sm">
-            {error}
+            {(error as Error).message}
           </div>
         ) : leads.length === 0 ? (
           <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mb-3">
               <HugeiconsIcon icon={FolderSearchIcon} className="size-6" />
             </div>
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              No leads found
-            </h3>
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">No leads found</h3>
             <p className="text-xs text-zinc-500 mt-1 max-w-sm">
-              No lead records match your filter criteria or search query. Try adjusting your search.
+              No lead records match your filter criteria. Try adjusting your search.
             </p>
           </div>
         ) : (
@@ -236,16 +212,12 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leads.map((lead) => (
+                {leads.map((lead: any) => (
                   <TableRow key={lead.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
-                          {lead.name}
-                        </span>
-                        <span className="text-xs text-zinc-500 font-mono">
-                          {lead.email}
-                        </span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{lead.name}</span>
+                        <span className="text-xs text-zinc-500 font-mono">{lead.email}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -281,12 +253,14 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Pagination Footer */}
-        {!loading && leads.length > 0 && (
+        {/* Pagination */}
+        {!isLoading && leads.length > 0 && (
           <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 bg-zinc-50/50 dark:bg-zinc-800/20">
             <div>
-              Showing Page <strong className="text-zinc-900 dark:text-zinc-100">{meta.page}</strong> of{" "}
-              <strong className="text-zinc-900 dark:text-zinc-100">{meta.totalPages}</strong> ({meta.total} total leads)
+              Page{" "}
+              <strong className="text-zinc-900 dark:text-zinc-100">{meta.page}</strong> of{" "}
+              <strong className="text-zinc-900 dark:text-zinc-100">{meta.totalPages}</strong>{" "}
+              ({meta.total} total leads)
             </div>
             <div className="flex items-center gap-2">
               <Button

@@ -13,6 +13,8 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, CircleCheckIcon, Loading01Icon } from "@hugeicons/core-free-icons";
 
+// Use z.input to get the pre-parse type (fields are optional/unresolved)
+// z.infer gives the post-parse output type which doesn't match raw form field values
 type PublicLeadFormValues = z.input<typeof publicLeadSchema>;
 
 export default function PublicLeadPage() {
