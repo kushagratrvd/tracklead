@@ -1,65 +1,197 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { publicLeadSchema } from "@/features/leads/validation";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowRightIcon, CheckCircleIcon, Loading01Icon } from "@hugeicons/react";
+
+type PublicLeadFormValues = z.infer<typeof publicLeadSchema>;
+
+export default function PublicLeadPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedLead, setSubmittedLead] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<PublicLeadFormValues>({
+    resolver: zodResolver(publicLeadSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      website_url_hp: "",
+    },
+  });
+
+  const onSubmit = async (values: PublicLeadFormValues) => {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/public/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error?.message || "Failed to submit lead");
+      }
+
+      setSubmittedLead(data.data.lead);
+      reset();
+    } catch (err: any) {
+      setErrorMessage(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-12">
+      {/* Hero Section */}
+      <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+          Public Capture Form Demonstration
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
+          Convert Leads into <span className="text-emerald-600 dark:text-emerald-400">Winning Deals</span>
+        </h1>
+        <p className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          Submit your contact details below to request a platform demo or consultation. Our sales team will immediately pick up your lead in our live pipeline dashboard.
+        </p>
+      </div>
+
+      {/* Capture Form Section */}
+      <div className="max-w-xl mx-auto w-full">
+        <Card className="border border-zinc-200 dark:border-zinc-800 shadow-xl bg-white dark:bg-zinc-900">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Request a Consultation
+            </CardTitle>
+            <CardDescription className="text-zinc-500">
+              Fill out your details to get started with TrackLead
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {submittedLead ? (
+              <div className="flex flex-col items-center text-center py-6 gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <CheckCircleIcon size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  Lead Received!
+                </h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
+                  Thank you, <strong className="text-zinc-900 dark:text-zinc-100">{submittedLead.name}</strong>. Your lead has been logged into our pipeline system with status <span className="font-semibold text-emerald-600 capitalize">New</span>.
+                </p>
+                <div className="flex items-center gap-3 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSubmittedLead(null)}
+                  >
+                    Submit Another Lead
+                  </Button>
+                  <Link href="/login">
+                    <Button className="bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 gap-2">
+                      Go to Dashboard <ArrowRightIcon size={16} />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {errorMessage && (
+                  <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-md">
+                    {errorMessage}
+                  </div>
+                )}
+
+                {/* Honeypot Spam Protection Field */}
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden"
+                  {...register("website_url_hp")}
+                />
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="e.g. Alex Morgan"
+                    {...register("name")}
+                  />
+                  {errors.name && (
+                    <p className="text-xs text-rose-500 font-medium">{errors.name.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Work Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="alex@company.com"
+                    {...register("email")}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-rose-500 font-medium">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      placeholder="+1 (555) 019-2834"
+                      {...register("phone")}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="company">Company Name</Label>
+                    <Input
+                      id="company"
+                      placeholder="Acme Corp"
+                      {...register("company")}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-11 text-base mt-2"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <Loading01Icon className="animate-spin" size={18} /> Submitting Lead...
+                    </span>
+                  ) : (
+                    "Submit Lead Request"
+                  )}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
