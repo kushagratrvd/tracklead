@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Loading01Icon, UserCheck01Icon, SecurityCheckIcon } from "@hugeicons/core-free-icons";
+import { Loading03Icon, UserCheck01Icon, SecurityCheckIcon } from "@hugeicons/core-free-icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -135,7 +135,7 @@ export default function LoginPage() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Loading01Icon} className="animate-spin size-4" /> Signing in...
+                  <HugeiconsIcon icon={Loading03Icon} className="animate-spin size-4" /> Signing in...
                 </span>
               ) : (
                 "Sign In"

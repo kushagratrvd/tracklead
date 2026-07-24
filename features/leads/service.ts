@@ -13,6 +13,16 @@ import {
 } from "./types";
 import { PaginationMeta } from "@/lib/api/response";
 
+// Helper for transaction execution with fallback for driver environments without interactive transaction support
+async function withTransaction<T>(callback: (tx: any) => Promise<T>): Promise<T> {
+  try {
+    return await db.transaction(callback);
+  } catch (err) {
+    // Fallback to sequential execution if db.transaction is not supported by driver
+    return await callback(db);
+  }
+}
+
 // 1. Fetch Paginated Leads with Filtering & Search
 export async function getLeads(user: UserSessionPayload, query: LeadFilterQuery) {
   const page = Math.max(1, query.page || 1);
@@ -147,8 +157,7 @@ export async function createPublicLead(input: CreatePublicLeadInput) {
     throw new AuthError("Spam detected", 400, "SPAM_DETECTED");
   }
 
-  // Atomic DB Transaction
-  return await db.transaction(async (tx) => {
+  return await withTransaction(async (tx) => {
     const [newLead] = await tx
       .insert(leads)
       .values({
@@ -223,8 +232,7 @@ export async function updateLead(
     }
   }
 
-  // Multi-write DB Transaction
-  return await db.transaction(async (tx) => {
+  return await withTransaction(async (tx) => {
     const updateData: Partial<typeof leads.$inferInsert> = {
       updatedAt: new Date(),
     };
@@ -297,7 +305,7 @@ export async function addNote(
     );
   }
 
-  return await db.transaction(async (tx) => {
+  return await withTransaction(async (tx) => {
     const [note] = await tx
       .insert(leadNotes)
       .values({

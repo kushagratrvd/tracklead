@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, CircleCheckIcon, Loading01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, CircleCheckIcon, Loading03Icon } from "@hugeicons/core-free-icons";
 
 // Use z.input to get the pre-parse type (fields are optional/unresolved)
 // z.infer gives the post-parse output type which doesn't match raw form field values
@@ -185,7 +185,7 @@ export default function PublicLeadPage() {
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Loading01Icon} className="animate-spin size-4" /> Submitting Lead...
+                      <HugeiconsIcon icon={Loading03Icon} className="animate-spin size-4" /> Submitting Lead...
                     </span>
                   ) : (
                     "Submit Lead Request"

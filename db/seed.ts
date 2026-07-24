@@ -155,12 +155,11 @@ export async function seedDatabase() {
   console.log("✨ Seed completed successfully.");
 }
 
-// Execute if called directly via CLI
-if (require.main === module) {
-  seedDatabase()
-    .then(() => process.exit(0))
-    .catch((err) => {
-      console.error("❌ Seed failed:", err);
-      process.exit(1);
-    });
-}
+// Top-level call — this file is only ever run as a CLI script
+seedDatabase()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("❌ Seed failed:", err);
+    process.exit(1);
+  });
+

@@ -37,7 +37,6 @@ export default async function RootLayout({
         <Providers>
           <Header user={session} />
           <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
         </Providers>
       </body>
     </html>

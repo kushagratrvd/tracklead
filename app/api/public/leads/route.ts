@@ -15,12 +15,13 @@ export async function POST(req: NextRequest) {
     const lead = await createPublicLead(parsed);
     return apiSuccess({ lead, message: "Lead submitted successfully" }, undefined, 201);
   } catch (error: any) {
+    console.error("POST /api/public/leads error:", error);
     if (error.statusCode) {
       return apiError(error.message, error.code, error.statusCode);
     }
     if (error.name === "ZodError") {
       return apiError("Validation error", "INVALID_INPUT", 400, error.errors);
     }
-    return apiError("Internal server error", "INTERNAL_SERVER_ERROR", 500);
+    return apiError(error.message || "Internal server error", "INTERNAL_SERVER_ERROR", 500);
   }
 }
