@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRightIcon, CheckCircleIcon, Loading01Icon } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, CircleCheckIcon, Loading01Icon } from "@hugeicons/core-free-icons";
 
-type PublicLeadFormValues = z.infer<typeof publicLeadSchema>;
+type PublicLeadFormValues = z.input<typeof publicLeadSchema>;
 
 export default function PublicLeadPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,6 +32,7 @@ export default function PublicLeadPage() {
       email: "",
       phone: "",
       company: "",
+      source: "public_form",
       website_url_hp: "",
     },
   });
@@ -91,7 +93,7 @@ export default function PublicLeadPage() {
             {submittedLead ? (
               <div className="flex flex-col items-center text-center py-6 gap-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                  <CheckCircleIcon size={32} />
+                  <HugeiconsIcon icon={CircleCheckIcon} className="size-8" />
                 </div>
                 <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                   Lead Received!
@@ -108,7 +110,7 @@ export default function PublicLeadPage() {
                   </Button>
                   <Link href="/login">
                     <Button className="bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 gap-2">
-                      Go to Dashboard <ArrowRightIcon size={16} />
+                      Go to Dashboard <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
                     </Button>
                   </Link>
                 </div>
@@ -181,7 +183,7 @@ export default function PublicLeadPage() {
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <Loading01Icon className="animate-spin" size={18} /> Submitting Lead...
+                      <HugeiconsIcon icon={Loading01Icon} className="animate-spin size-4" /> Submitting Lead...
                     </span>
                   ) : (
                     "Submit Lead Request"

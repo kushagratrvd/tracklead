@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Loading01Icon, UserCheck01Icon, SecurityCheckIcon } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading01Icon, UserCheck01Icon, SecurityCheckIcon } from "@hugeicons/core-free-icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -79,7 +80,7 @@ export default function LoginPage() {
           {/* Quick Demo Credentials Buttons */}
           <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-800 space-y-2">
             <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-              <SecurityCheckIcon size={14} /> Quick Demo One-Click Fill:
+              <HugeiconsIcon icon={SecurityCheckIcon} className="size-4" /> Quick Demo One-Click Fill:
             </p>
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -89,7 +90,7 @@ export default function LoginPage() {
                 onClick={fillDemoAdmin}
                 className="text-xs font-medium border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/50 justify-start"
               >
-                <UserCheck01Icon size={14} className="mr-1" /> Admin Demo
+                <HugeiconsIcon icon={UserCheck01Icon} className="size-3.5 mr-1" /> Admin Demo
               </Button>
               <Button
                 type="button"
@@ -98,7 +99,7 @@ export default function LoginPage() {
                 onClick={fillDemoMember}
                 className="text-xs font-medium border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 justify-start"
               >
-                <UserCheck01Icon size={14} className="mr-1" /> Member Demo
+                <HugeiconsIcon icon={UserCheck01Icon} className="size-3.5 mr-1" /> Member Demo
               </Button>
             </div>
           </div>
@@ -134,7 +135,7 @@ export default function LoginPage() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <Loading01Icon className="animate-spin" size={16} /> Signing in...
+                  <HugeiconsIcon icon={Loading01Icon} className="animate-spin size-4" /> Signing in...
                 </span>
               ) : (
                 "Sign In"

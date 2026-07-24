@@ -11,13 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { LEAD_STATUSES, LeadStatus } from "@/db/schema";
 import { formatDistanceToNow } from "date-fns";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Search01Icon,
   UserIcon,
   FilterIcon,
   ArrowRight01Icon,
-  FolderNotFoundIcon,
-} from "@hugeicons/react";
+  FolderSearchIcon,
+} from "@hugeicons/core-free-icons";
 
 export default function DashboardPage() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -114,7 +115,7 @@ export default function DashboardPage() {
         <CardContent className="p-4 flex flex-col md:flex-row items-center gap-3">
           {/* Search Input */}
           <div className="relative w-full md:w-72">
-            <Search01Icon className="absolute left-3 top-2.5 text-zinc-400" size={16} />
+            <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 text-zinc-400 size-4" />
             <Input
               placeholder="Search name, email, company..."
               className="pl-9 h-9 text-xs"
@@ -128,11 +129,11 @@ export default function DashboardPage() {
 
           {/* Status Filter */}
           <div className="w-full md:w-44 flex items-center gap-1.5">
-            <FilterIcon size={14} className="text-zinc-400 shrink-0" />
+            <HugeiconsIcon icon={FilterIcon} className="text-zinc-400 shrink-0 size-3.5" />
             <Select
               value={statusFilter}
               onValueChange={(val) => {
-                setStatusFilter(val);
+                if (val) setStatusFilter(val);
                 setPage(1);
               }}
             >
@@ -152,11 +153,11 @@ export default function DashboardPage() {
 
           {/* Assignee Filter */}
           <div className="w-full md:w-48 flex items-center gap-1.5">
-            <UserIcon size={14} className="text-zinc-400 shrink-0" />
+            <HugeiconsIcon icon={UserIcon} className="text-zinc-400 shrink-0 size-3.5" />
             <Select
               value={assigneeFilter}
               onValueChange={(val) => {
-                setAssigneeFilter(val);
+                if (val) setAssigneeFilter(val);
                 setPage(1);
               }}
             >
@@ -212,7 +213,7 @@ export default function DashboardPage() {
         ) : leads.length === 0 ? (
           <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mb-3">
-              <FolderNotFoundIcon size={24} />
+              <HugeiconsIcon icon={FolderSearchIcon} className="size-6" />
             </div>
             <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               No leads found
@@ -269,7 +270,7 @@ export default function DashboardPage() {
                     <TableCell className="text-right">
                       <Link href={`/dashboard/leads/${lead.id}`}>
                         <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold gap-1">
-                          View <ArrowRight01Icon size={14} />
+                          View <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
                         </Button>
                       </Link>
                     </TableCell>

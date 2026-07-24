@@ -13,6 +13,7 @@ import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { ReopenDialog } from "@/components/ReopenDialog";
 import { LEAD_STATUSES, LeadStatus } from "@/db/schema";
 import { formatDistanceToNow, format } from "date-fns";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
   UserIcon,
@@ -22,7 +23,7 @@ import {
   Time01Icon,
   BubbleChatIcon,
   Loading01Icon,
-} from "@hugeicons/react";
+} from "@hugeicons/core-free-icons";
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -200,7 +201,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         </div>
         <Link href="/dashboard">
           <Button variant="outline" className="gap-2">
-            <ArrowLeft01Icon size={16} /> Return to Dashboard
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" /> Return to Dashboard
           </Button>
         </Link>
       </div>
@@ -219,7 +220,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         <div className="flex items-center gap-3">
           <Link href="/dashboard">
             <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
-              <ArrowLeft01Icon size={14} /> Back
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" /> Back
             </Button>
           </Link>
           <div>
@@ -288,7 +289,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
             <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800">
               <CardTitle className="text-base font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                <BubbleChatIcon size={18} className="text-emerald-600" /> Lead Notes Thread ({lead.notes?.length || 0})
+                <HugeiconsIcon icon={BubbleChatIcon} className="size-4 text-emerald-600" /> Lead Notes Thread ({lead.notes?.length || 0})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
@@ -356,7 +357,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
             <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800">
               <CardTitle className="text-base font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                <Time01Icon size={18} className="text-blue-600" /> Audit Activity Timeline
+                <HugeiconsIcon icon={Time01Icon} className="size-4 text-blue-600" /> Audit Activity Timeline
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
@@ -376,28 +377,28 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             <CardContent className="p-4 space-y-4 text-xs">
               <div className="space-y-1">
                 <span className="text-zinc-400 font-medium flex items-center gap-1.5">
-                  <UserIcon size={14} /> Full Name
+                  <HugeiconsIcon icon={UserIcon} className="size-3.5" /> Full Name
                 </span>
                 <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{lead.name}</p>
               </div>
 
               <div className="space-y-1">
                 <span className="text-zinc-400 font-medium flex items-center gap-1.5">
-                  <Mail01Icon size={14} /> Email Address
+                  <HugeiconsIcon icon={Mail01Icon} className="size-3.5" /> Email Address
                 </span>
                 <p className="font-mono text-zinc-900 dark:text-zinc-100">{lead.email}</p>
               </div>
 
               <div className="space-y-1">
                 <span className="text-zinc-400 font-medium flex items-center gap-1.5">
-                  <CallIcon size={14} /> Phone
+                  <HugeiconsIcon icon={CallIcon} className="size-3.5" /> Phone
                 </span>
                 <p className="text-zinc-900 dark:text-zinc-100">{lead.phone || "—"}</p>
               </div>
 
               <div className="space-y-1">
                 <span className="text-zinc-400 font-medium flex items-center gap-1.5">
-                  <Building01Icon size={14} /> Company
+                  <HugeiconsIcon icon={Building01Icon} className="size-3.5" /> Company
                 </span>
                 <p className="text-zinc-900 dark:text-zinc-100">{lead.company || "—"}</p>
               </div>
